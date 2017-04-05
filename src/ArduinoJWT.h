@@ -33,7 +33,7 @@
 
 #include <Arduino.h>
 
-const PROGMEM char* _jwtHeader = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+const  char* _jwtHeader = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
 class ArduinoJWT {
 private:
