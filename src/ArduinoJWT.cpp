@@ -95,7 +95,7 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
   }
   *(ptr) = 0;
   // Build the signature
-  Sha256.initHmac((const unsigned char*)psk, strlen(_psk));
+  Sha256.initHmac((const unsigned char*)_psk.c_str(), _psk.length());
   Sha256.print(jwt);
   // Add the signature to the jwt
   *ptr++ = '.';
@@ -135,7 +135,7 @@ bool ArduinoJWT::decodeJWT(char* jwt, char* payload, int payloadLength) {
   }
 
   // Build the signature
-  Sha256.initHmac((const unsigned char*)_psk, strlen(_psk));
+  Sha256.initHmac((const unsigned char*)_psk.c_str(), _psk.length());
   Sha256.print(encodedHeader);
   Sha256.print(".");
   Sha256.print(encodedPayload);
