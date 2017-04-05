@@ -1,0 +1,15 @@
+{
+    "name": "ArduinoJWT",
+    "keywords": "jwt, iot",
+    "description": "Library for encoding and decoding JSON web tokens for the Arduino and ESP8266 platforms. This library does not currently support adding any options to the JWT and uses a fixed header for HS256.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/knolleary/pubsubclient.git"
+    },
+    "version": "1.0",
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "espressif"
+    ]
+}
