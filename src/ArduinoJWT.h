@@ -33,11 +33,12 @@
 
 #include <Arduino.h>
 
+const PROGMEM char* _jwtHeader = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+
 class ArduinoJWT {
 private:
   String _psk;
   // The standard JWT header already base64 encoded
-  const PROGMEM char* _jwtHeader = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
 public:
   ArduinoJWT(String psk);
