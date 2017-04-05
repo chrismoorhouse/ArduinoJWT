@@ -33,6 +33,9 @@
 #include "base64.hpp"
 #include "sha256.h"
 
+// The standard JWT header already base64 encoded. Equates to {"alg": "HS256", "typ": "JWT"}
+const PROGMEM char* jwtHeader = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+
 ArduinoJWT::ArduinoJWT(String psk) {
   _psk = psk;
 }
@@ -53,7 +56,7 @@ int ArduinoJWT::getJWTLength(String& payload) {
 }
 
 int ArduinoJWT::getJWTLength(char* payload) {
-  return strlen(_jwtHeader) + encode_base64_length(strlen(payload)) + encode_base64_length(32) + 2;
+  return strlen(jwtHeader) + encode_base64_length(strlen(payload)) + encode_base64_length(32) + 2;
 }
 
 int ArduinoJWT::getJWTPayloadLength(String& jwt) {
@@ -84,8 +87,8 @@ String ArduinoJWT::encodeJWT(String& payload) {
 void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
   unsigned char* ptr = (unsigned char*)jwt;
   // Build the initial part of the jwt (header.payload)
-  memcpy(ptr, _jwtHeader, strlen(_jwtHeader));
-  ptr += strlen(_jwtHeader);
+  memcpy(ptr, jwtHeader, strlen(jwtHeader));
+  ptr += strlen(jwtHeader);
   *ptr++ = '.';
   encode_base64((unsigned char*)payload, strlen(payload), ptr);
   ptr += encode_base64_length(strlen(payload));
