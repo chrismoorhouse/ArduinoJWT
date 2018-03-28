@@ -31,8 +31,7 @@
 #ifndef ARDUINO_JWT_H
 #define ARDUINO_JWT_H
 
-#include <Arduino.h>
-
+#include "Arduino.h"
 
 
 class ArduinoJWT {
