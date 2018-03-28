@@ -47,16 +47,16 @@ public:
   void setPSK(char* psk);
 
   // Get the calculated length of a JWT
-  int getJWTLength(String& payload);
+  int getJWTLength(String payload);
   int getJWTLength(char* payload);
   // Get the length of the decoded payload from a JWT
-  int getJWTPayloadLength(String& jwt);
+  int getJWTPayloadLength(String jwt);
   int getJWTPayloadLength(char* jwt);
   // Create a JSON Web Token
-  String encodeJWT(String& payload);
+  String encodeJWT(String payload);
   void encodeJWT(char* payload, char* jwt);
   // Decode a JWT and retreive the payload
-  bool decodeJWT(String& jwt, String& payload);
+  String decodeJWT(String jwt);
   bool decodeJWT(char* jwt, char* payload, int payloadLength);
 };
 

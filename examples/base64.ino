@@ -2,7 +2,7 @@
 Just a quick test verifying base64 works properly
 */
 
-#include "../src/base64.h"
+#include "base64.h"
 
 #define HEADER_NUM 3
 

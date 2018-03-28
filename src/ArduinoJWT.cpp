@@ -50,7 +50,7 @@ void ArduinoJWT::setPSK(char* psk) {
   _psk = String(psk);
 }
 
-int ArduinoJWT::getJWTLength(String& payload) {
+int ArduinoJWT::getJWTLength(String payload) {
   return getJWTLength((char*)payload.c_str());
 }
 
@@ -58,7 +58,7 @@ int ArduinoJWT::getJWTLength(char* payload) {
   return strlen(jwtHeader) + encode_base64_length(strlen(payload)) + encode_base64_length(32) + 2;
 }
 
-int ArduinoJWT::getJWTPayloadLength(String& jwt) {
+int ArduinoJWT::getJWTPayloadLength(String jwt) {
   return getJWTPayloadLength((char*)jwt.c_str());
 }
 
@@ -77,7 +77,7 @@ int ArduinoJWT::getJWTPayloadLength(char* jwt) {
   }
 }
 
-String ArduinoJWT::encodeJWT(String& payload) {
+String ArduinoJWT::encodeJWT(String payload) {
   char jwt[getJWTLength(payload)];
   encodeJWT((char*)payload.c_str(), (char*)jwt);
   return String(jwt);
@@ -97,7 +97,7 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
   }
   *(ptr) = 0;
   // Build the signature
-  Sha256.initHmac((const unsigned char*)_psk.c_str(), _psk.length());
+  Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
   Sha256.print(jwt);
   // Add the signature to the jwt
   *ptr++ = '.';
@@ -110,16 +110,19 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
   *(ptr) = 0;
 }
 
-bool ArduinoJWT::decodeJWT(String& jwt, String& payload) {
+String ArduinoJWT::decodeJWT(String jwt)
+{
+  String payload;
+
   int payloadLength = getJWTPayloadLength(jwt);
-  if(payloadLength > 0) {
+  if(payloadLength > 0)
+  {
     char jsonPayload[payloadLength];
     if(decodeJWT((char*)jwt.c_str(), (char*)jsonPayload, payloadLength)) {
       payload = String(jsonPayload);
-      return true;
     }
   }
-  return false;
+  return payload;
 }
 
 bool ArduinoJWT::decodeJWT(char* jwt, char* payload, int payloadLength) {
