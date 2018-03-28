@@ -11,6 +11,8 @@
 #ifndef BASE64_H_INCLUDED
 #define BASE64_H_INCLUDED
 
+#include "Arduino.h"
+
 /* binary_to_base64:
  *   Description:
  *     Converts a single byte from a binary value to the corresponding base64 character
@@ -41,6 +43,7 @@ unsigned char base64_to_binary(unsigned char v);
  *     Number of base64 characters needed to encode input_length bytes of binary data
  */
 unsigned int encode_base64_length(unsigned int input_length);
+unsigned int encode_base64_length(String input);
 
 /* decode_base64_length:
  *   Description:
@@ -51,6 +54,7 @@ unsigned int encode_base64_length(unsigned int input_length);
  *     Number of bytes of binary data in input
  */
 unsigned int decode_base64_length(unsigned char input[]);
+unsigned int decode_base64_length(String input);
 
 /* encode_base64:
  *   Description:
@@ -63,6 +67,7 @@ unsigned int decode_base64_length(unsigned char input[]);
  *     Length of encoded string in bytes (not including null terminator)
  */
 unsigned int encode_base64(unsigned char input[], unsigned int input_length, unsigned char output[]);
+String encode_base64(String input);
 
 /* decode_base64:
  *   Description:
@@ -74,6 +79,7 @@ unsigned int encode_base64(unsigned char input[], unsigned int input_length, uns
  *     Number of bytes in the decoded binary
  */
 unsigned int decode_base64(unsigned char input[], unsigned char output[]);
+String decode_base64(String input);
 
 unsigned char binary_to_base64(unsigned char v) {
   // Capital letters - 'A' is ascii 65 and base64 0
@@ -113,8 +119,13 @@ unsigned char base64_to_binary(unsigned char c) {
   return 255;
 }
 
+
 unsigned int encode_base64_length(unsigned int input_length) {
   return (input_length + 2)/3*4;
+}
+
+unsigned int encode_base64_length(String input){
+  return encode_base64_length((unsigned int) input.length());
 }
 
 unsigned int decode_base64_length(unsigned char input[]) {
@@ -133,6 +144,11 @@ unsigned int decode_base64_length(unsigned char input[]) {
     case 2: return output_length + 1;
     case 3: return output_length + 2;
   }
+}
+
+unsigned int decode_base64_length(String input)
+{
+  return decode_base64_length((unsigned char*) input.c_str());
 }
 
 unsigned int encode_base64(unsigned char input[], unsigned int input_length, unsigned char output[]) {
@@ -172,6 +188,14 @@ unsigned int encode_base64(unsigned char input[], unsigned int input_length, uns
   return encode_base64_length(input_length);
 }
 
+String encode_base64(String input)
+{
+  int encode_length = encode_base64_length(input);
+  char output[encode_length];
+  encode_base64((unsigned char*) input.c_str(), input.length(), (unsigned char*) output);
+  return String(output).substring(0, encode_length);
+}
+
 unsigned int decode_base64(unsigned char input[], unsigned char output[]) {
   unsigned int output_length = decode_base64_length(input);
 
@@ -196,6 +220,14 @@ unsigned int decode_base64(unsigned char input[], unsigned char output[]) {
   }
 
   return output_length;
+}
+
+String decode_base64(String input)
+{
+  int decode_length = decode_base64_length(input);
+  char output[decode_length];
+  decode_base64((unsigned char*) input.c_str(), (unsigned char*) output);
+  return String(output).substring(0, decode_length);
 }
 
 #endif // ifndef

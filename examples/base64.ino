@@ -2,7 +2,7 @@
 Just a quick test verifying base64 works properly
 */
 
-#include "../lib/base64.h"
+#include "../src/base64.h"
 
 #define HEADER_NUM 3
 
@@ -24,19 +24,34 @@ void setup(){
   Serial.println();
 
   for (int i=0; i<HEADER_NUM; i++){
-    String _output, success;
-    char b64_header[encode_base64_length(header[i].length())];
+    String encode, decode, success;
+    int exp_length;
 
-    // Compute
-    encode_base64((unsigned char*) header[i].c_str(), header[i].length(), (unsigned char*) b64_header);
-    _output = String(b64_header);
-    success = (output[i] == _output ? "True" : "False");
+    // Encode
+    encode = encode_base64(header[i]);
+    exp_length = encode_base64_length(header[i]);
+    success = (output[i] == encode ? "True" : "False");
 
     // Print results
-    Serial.println("Test # " + String(i + 1));
+    Serial.println("Encode Test # " + String(i + 1));
     Serial.println("Input: " + header[i]);
-    Serial.println("Expected Output: " + output[i]);
-    Serial.println("Received Output: " + _output);
+    Serial.println("Expected Length: " + (String) exp_length);
+    Serial.println("Expected Output: " + output[i] + ", length: " + output[i].length());
+    Serial.println("Received Output: " + encode + ", length: " + encode.length());
+    Serial.println("Success: " + success);
+    Serial.println();
+
+    // Decode
+    decode = decode_base64(encode);
+    exp_length = decode_base64_length(encode);
+    success = (header[i] == decode ? "True" : "False");
+
+    // Print results
+    Serial.println("Decode Test # " + String(i + 1));
+    Serial.println("Input: " + encode);
+    Serial.println("Expected Length: " + (String) exp_length);
+    Serial.println("Expected Output: " + header[i] + ", length: " + header[i].length());
+    Serial.println("Received Output: " + decode + ", length: " + decode.length());
     Serial.println("Success: " + success);
     Serial.println();
 
