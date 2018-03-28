@@ -1,16 +1,30 @@
 /*
-Top Level Example
+Top Level Example / Unit Test
 */
 
 #include "ArduinoJWT.h"
 
-ArduinoJWT JWT((char *) "secret");
+ArduinoJWT JWT((char*) "secret");
+
+String header = "{\"alg\": \"HS256\", \"typ\": \"JWT\"}";
+String output = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.Vo1KUsDkkzOw6DCXPJsZX-SOBMtWHUcCeHu13ydrYMw";
 
 void setup(){
-  Serial.begin(115200);
+  String _output, success;
 
+  Serial.begin(115200);
   Serial.println();
-  Serial.println(JWT.encodeJWT(header));
+
+  // Compute
+  _output = JWT.encodeJWT(header);
+  success = (output == _output ? "True" : "False");
+
+  // Print results
+  Serial.println("Input: " + header);
+  Serial.println("Expected Output: " + output);
+  Serial.println("Received Output: " + _output);
+  Serial.println("Success: " + success);
+  Serial.println();
 
 }
 

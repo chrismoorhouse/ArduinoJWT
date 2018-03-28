@@ -32,7 +32,7 @@ void setup(){
     _output = String(b64_header);
     success = (output[i] == _output ? "True" : "False");
 
-    // Output
+    // Print results
     Serial.println("Test # " + String(i + 1));
     Serial.println("Input: " + header[i]);
     Serial.println("Expected Output: " + output[i]);
