@@ -4,7 +4,7 @@ Top Level Example / Unit Test
 
 #include "ArduinoJWT.h"
 
-ArduinoJWT JWT((String) "secret");
+ArduinoJWT JWT;
 
 String header = "{\"alg\": \"HS256\", \"typ\": \"JWT\"}";
 String output = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.Vo1KUsDkkzOw6DCXPJsZX-SOBMtWHUcCeHu13ydrYMw";
@@ -15,8 +15,10 @@ void setup(){
 
   String encode, decode, success;
 
+  JWT.setPSK((String) "secret");
+
   // Encode
-  encode = JWT.encodeJWT(header);
+  encode = JWT.encodeJWT(header, HS256);
   success = (output == encode ? "True" : "False");
 
   // Print results
@@ -38,7 +40,6 @@ void setup(){
   Serial.println("Received Output: " + decode + ", length: " + decode.length());
   Serial.println("Success: " + success);
   Serial.println();
-
 
 }
 

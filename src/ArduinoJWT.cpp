@@ -29,20 +29,44 @@
  **/
 
 #include "ArduinoJWT.h"
+#include "uECC.h"
 #include "base64.h"
 #include "sha256.h"
 
-// The standard JWT header already base64 encoded. Equates to {"alg": "HS256", "typ": "JWT"}
-const char* jwtHeader PROGMEM = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+#include <stdio.h>
+#include <string.h>
 
-ArduinoJWT::ArduinoJWT(String psk) {
-  _psk = psk;
+
+typedef struct SHA256_CTX {
+	uint32_t	state[8];
+	uint64_t	bitcount;
+	uint8_t	buffer[BLOCK_LENGTH];
+} SHA256_CTX;
+
+typedef struct SHA256_HashContext{
+    uECC_HashContext uECC;
+    SHA256_CTX ctx;
+} SHA256_HashContext;
+
+static void init_SHA256(const uECC_HashContext *base) {
+    SHA256_HashContext *context = (SHA256_HashContext *)base;
+    // SHA256_Init(&context->ctx);
+    Sha256.init();
 }
 
-ArduinoJWT::ArduinoJWT(char* psk) {
-  _psk = String(psk);
+static void update_SHA256(const uECC_HashContext *base, const uint8_t *message, unsigned int message_size) {
+    SHA256_HashContext *context = (SHA256_HashContext *)base;
+    // SHA256_Update(&context->ctx, message, (int) message_size);
+    Sha256.print((char *) message);
 }
 
+static void finish_SHA256(const uECC_HashContext *base, uint8_t *hash) {
+    SHA256_HashContext *context = (SHA256_HashContext *)base;
+    // SHA256_Final(hash, &context->ctx);
+    hash = Sha256.result();
+}
+
+// ArduinoJWT Methods
 void ArduinoJWT::setPSK(String psk) {
   _psk = psk;
 }
@@ -50,17 +74,36 @@ void ArduinoJWT::setPSK(char* psk) {
   _psk = String(psk);
 }
 
-int ArduinoJWT::getJWTLength(String payload) {
-  return getJWTLength((char*)payload.c_str());
+// void ArduinoJWT::setRSAPK(String buf){
+//   setRSAPK((uint8_t*) buf.c_str(), buf.length());
+// }
+//
+// void ArduinoJWT::setRSAPK(uint8_t* buf, int len){
+//   // asn1_get_private_key(buf, len, &_rsa_ctx);
+// }
+
+void ArduinoJWT::setPK(String pk) {
+  _pk = pk;
+}
+void ArduinoJWT::setPK(char* pk) {
+  _pk = String(pk);
 }
 
-int ArduinoJWT::getJWTLength(char* payload) {
-  return strlen(jwtHeader) + encode_base64_length(strlen(payload)) + encode_base64_length(32) + 2;
+int ArduinoJWT::getJWTLength(String payload, Algo algo) {
+  return getJWTLength((char*)payload.c_str(), algo);
+}
+
+int ArduinoJWT::getJWTLength(char* payload, Algo algo) {
+  return jwtHeader[algo].length() + encode_base64_length(strlen(payload)) + encode_base64_length(32) + 2;
 }
 
 int ArduinoJWT::getJWTPayloadLength(String jwt) {
   return getJWTPayloadLength((char*)jwt.c_str());
 }
+
+// void ArduinoJWT::freeRSAPK(){
+//   RSA_free(&_rsa_ctx);
+// }
 
 int ArduinoJWT::getJWTPayloadLength(char* jwt) {
   char jwtCopy[strlen(jwt)];
@@ -77,18 +120,22 @@ int ArduinoJWT::getJWTPayloadLength(char* jwt) {
   }
 }
 
-String ArduinoJWT::encodeJWT(String payload) {
-  char jwt[getJWTLength(payload)];
-  encodeJWT((char*)payload.c_str(), (char*)jwt);
+String ArduinoJWT::encodeJWT(String payload, Algo algo)
+{
+  char jwt[getJWTLength(payload, algo)];
+  encodeJWT((char*)payload.c_str(), (char*)jwt, algo);
   return String(jwt);
 }
 
-void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
+void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
+{
   unsigned char* ptr = (unsigned char*)jwt;
+
   // Build the initial part of the jwt (header.payload)
-  memcpy(ptr, jwtHeader, strlen(jwtHeader));
-  ptr += strlen(jwtHeader);
+  memcpy(ptr, (char*) jwtHeader[algo].c_str(), jwtHeader[algo].length());
+  ptr += jwtHeader[algo].length();
   *ptr++ = '.';
+
   encode_base64((unsigned char*)payload, strlen(payload), ptr);
   ptr += encode_base64_length(strlen(payload));
   // Get rid of any padding (trailing '=' added when base64 encoding)
@@ -96,18 +143,96 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt) {
     ptr--;
   }
   *(ptr) = 0;
+
   // Build the signature
-  Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
-  Sha256.print(jwt);
+  int signature_size;
+  uint8_t* signature;
+
+  // Hash the message (payload) if needed
+  uint8_t *hash;
+  if (algo == RS256 || algo == ES256) {
+    // Hash the message (payload)
+    // TODO: Should check if message is too long..
+    Sha256.init();
+    Sha256.print(payload);
+    hash = Sha256.result();
+  }
+
+  switch(algo) {
+    case HS256:
+      signature_size = 32;
+      // Perform HMAC
+      Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
+      Sha256.print(jwt);
+      signature = Sha256.resultHmac();
+      break;
+
+    // case RS256:
+    //   // RSA
+    //   // https://github.com/igrr/axtls-8266/blob/d94ccb9181401e03aed051d7657c790ea935413a/ssl/gen_cert.c#L300
+    //   // https://github.com/igrr/axtls-8266/blob/0c3a9f722f11799fbeda1f99f9d9ab77a82a4489/crypto/rsa.c#L261
+    //   // https://tools.ietf.org/html/rfc3447#section-9.2
+    //
+    //   // Create pad (refered as T in RFC)
+    //   uint8_t *pad;
+    //   int pad_size;
+    //
+    //   pad_size = sizeof(SHA256_SIG) + HASH_LENGTH;
+    //   pad = (uint8_t *)malloc(pad_size);
+    //   memcpy(pad, SHA256_SIG, sizeof(SHA256_SIG));
+    //   memcpy(&pad[sizeof(SHA256_SIG)], hash, HASH_LENGTH);
+    //
+    //   // Allocate memory for the signature
+    //   signature = (uint8_t *)malloc(_rsa_ctx.num_octets);
+    //
+    //   // Sign
+    //   signature_size = RSA_encrypt((const RSA_CTX*) &_rsa_ctx, pad, pad_size, signature, 1);
+    //
+    //   // Get rid of the pad
+    //   free(pad);
+    //   break;
+
+    case ES256:
+      // ECC
+      // https://github.com/kmackay/micro-ecc/blob/master/uECC.h
+      uint8_t tmp[2 * HASH_LENGTH + BLOCK_LENGTH];
+      SHA256_HashContext ctx = {{
+          &init_SHA256,
+          &update_SHA256,
+          &finish_SHA256,
+          BLOCK_LENGTH,
+          HASH_LENGTH,
+          tmp
+      }};
+
+      // Sign hash
+      uECC_sign_deterministic(
+        (const uint8_t*) _pk.c_str(),                   // private key
+        (const uint8_t*) hash, HASH_LENGTH,             // hash
+        &ctx.uECC,                                      // ecc context
+        signature,                                      // signature output
+        uECC_secp256r1()                                // curve
+      );
+      signature_size = 64;
+      break;
+  }
+
   // Add the signature to the jwt
   *ptr++ = '.';
-  encode_base64(Sha256.resultHmac(), 32, ptr);
-  ptr += encode_base64_length(32);
+  signature_size = (unsigned int) signature_size;
+  encode_base64(signature, signature_size, ptr);
+  ptr += encode_base64_length(signature_size);
   // Get rid of any padding and replace / and +
   while(*(ptr - 1) == '=') {
     ptr--;
   }
   *(ptr) = 0;
+
+  // if (algo == RS256){
+  //   // Original signature is not needed anymore
+  //   free(signature);
+  // }
+
 }
 
 String ArduinoJWT::decodeJWT(String jwt)
