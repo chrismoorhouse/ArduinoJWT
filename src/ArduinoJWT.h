@@ -42,27 +42,18 @@
 // #include "../lib/axtls-8266/crypto/crypto.h"
 
 
-// The standard JWT header already base64 encoded.
-const String jwtHeader[3] PROGMEM = {
-  "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9",   // {"alg": "HS256", "typ": "JWT"}
-  "eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9",   // {"alg": "RS256", "typ": "JWT"}"
-  "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogIkpXVCJ9"    // {"alg": "ES256", "typ": "JWT"}
-};
-
-// const uint8_t SHA256_SIG[] PROGMEM = {
-//   0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-//   0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20
-// };
-
-
 // ArduinoJWT Related
-enum Algo {HS256=0, RS256=1, ES256=2};
+typedef enum Algo{
+  HS256=0,
+  RS256=1,
+  ES256=2
+}Algo;
 
 class ArduinoJWT {
 private:
-  String _psk;        // for HS256 (Pre-shared Key)
-  // RSA_CTX _rsa_ctx;   // for RS256 (RSA Private Key)
-  String _pk;         // for ES256 (Private Key)
+  String _psk;          // for HS256 (Pre-shared Key)
+  // RSA_CTX _rsa_ctx;     // for RS256 (RSA Private Key)
+  uint8_t* _pk;         // for ES256 (Private Key)
 
 public:
   // Set keys for encoding and decoding JWTs
@@ -71,7 +62,7 @@ public:
   // void setRSAPK(String buf);
   // void setRSAPK(uint8_t *buf, int len);
   void setPK(String pk);
-  void setPK(char* pk);
+  void setPK(uint8_t* pk);
 
   // // Dump keys if they are not needed
   // void freeRSAPK();
