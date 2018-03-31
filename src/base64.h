@@ -22,7 +22,7 @@
  *     ascii code of base64 character. If byte is >= 64, then there is not corresponding base64 character
  *     and 255 is returned
  */
-unsigned char binary_to_base64(unsigned char v);
+uint8_t binary_to_base64(uint8_t v);
 
 /* base64_to_binary:
  *   Description:
@@ -32,7 +32,7 @@ unsigned char binary_to_base64(unsigned char v);
  *   Returns:
  *     6-bit binary value
  */
-unsigned char base64_to_binary(unsigned char v);
+uint8_t base64_to_binary(uint8_t v);
 
 /* encode_base64_length:
  *   Description:
@@ -53,7 +53,7 @@ unsigned int encode_base64_length(String input);
  *   Returns:
  *     Number of bytes of binary data in input
  */
-unsigned int decode_base64_length(unsigned char input[]);
+unsigned int decode_base64_length(uint8_t input[]);
 unsigned int decode_base64_length(String input);
 
 /* encode_base64:
@@ -66,7 +66,7 @@ unsigned int decode_base64_length(String input);
  *   Returns:
  *     Length of encoded string in bytes (not including null terminator)
  */
-unsigned int encode_base64(unsigned char input[], unsigned int input_length, unsigned char output[]);
+unsigned int encode_base64(uint8_t input[], unsigned int input_length, uint8_t output[]);
 String encode_base64(String input);
 
 /* decode_base64:
@@ -78,10 +78,10 @@ String encode_base64(String input);
  *   Returns:
  *     Number of bytes in the decoded binary
  */
-unsigned int decode_base64(unsigned char input[], unsigned char output[]);
+unsigned int decode_base64(uint8_t input[], uint8_t output[]);
 String decode_base64(String input);
 
-unsigned char binary_to_base64(unsigned char v) {
+uint8_t binary_to_base64(uint8_t v) {
   // Capital letters - 'A' is ascii 65 and base64 0
   if(v < 26) return v + 'A';
 
@@ -100,7 +100,7 @@ unsigned char binary_to_base64(unsigned char v) {
   return 64;
 }
 
-unsigned char base64_to_binary(unsigned char c) {
+uint8_t base64_to_binary(uint8_t c) {
   // Capital letters - 'A' is ascii 65 and base64 0
   if('A' <= c && c <= 'Z') return c - 'A';
 
@@ -128,8 +128,8 @@ unsigned int encode_base64_length(String input){
   return encode_base64_length((unsigned int) input.length());
 }
 
-unsigned int decode_base64_length(unsigned char input[]) {
-  unsigned char *start = input;
+unsigned int decode_base64_length(uint8_t input[]) {
+  uint8_t *start = input;
 
   while(base64_to_binary(input[0]) < 64) {
     ++input;
@@ -148,10 +148,10 @@ unsigned int decode_base64_length(unsigned char input[]) {
 
 unsigned int decode_base64_length(String input)
 {
-  return decode_base64_length((unsigned char*) input.c_str());
+  return decode_base64_length((uint8_t*) input.c_str());
 }
 
-unsigned int encode_base64(unsigned char input[], unsigned int input_length, unsigned char output[]) {
+unsigned int encode_base64(uint8_t input[], unsigned int input_length, uint8_t output[]) {
   unsigned int full_sets = input_length/3;
 
   // While there are still full sets of 24 bits...
@@ -192,11 +192,11 @@ String encode_base64(String input)
 {
   int encode_length = encode_base64_length(input);
   char output[encode_length];
-  encode_base64((unsigned char*) input.c_str(), input.length(), (unsigned char*) output);
+  encode_base64((uint8_t*) input.c_str(), input.length(), (uint8_t*) output);
   return String(output).substring(0, encode_length);
 }
 
-unsigned int decode_base64(unsigned char input[], unsigned char output[]) {
+unsigned int decode_base64(uint8_t input[], uint8_t output[]) {
   unsigned int output_length = decode_base64_length(input);
 
   // While there are still full sets of 24 bits...
@@ -226,7 +226,7 @@ String decode_base64(String input)
 {
   int decode_length = decode_base64_length(input);
   char output[decode_length];
-  decode_base64((unsigned char*) input.c_str(), (unsigned char*) output);
+  decode_base64((uint8_t*) input.c_str(), (uint8_t*) output);
   return String(output).substring(0, decode_length);
 }
 
