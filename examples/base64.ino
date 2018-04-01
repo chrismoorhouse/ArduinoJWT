@@ -7,15 +7,15 @@ Just a quick test verifying base64 works properly
 #define HEADER_NUM 3
 
 String header[HEADER_NUM] = {
-  "{\"alg\": \"HS256\", \"typ\": \"JWT\"}",
-  "{\"alg\": \"RS256\", \"typ\": \"JWT\"}",
-  "{\"alg\": \"ES256\", \"typ\": \"JWT\"}"
+  "{\"typ\":\"JWT\",\"alg\":\"HS256\"}",
+  "{\"typ\":\"JWT\",\"alg\":\"RS256\"}",
+  "{\"typ\":\"JWT\",\"alg\":\"ES256\"}"
 };
 
 String output[HEADER_NUM] = {
-  "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9",
-  "eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9",
-  "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogIkpXVCJ9"
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9"
 };
 
 

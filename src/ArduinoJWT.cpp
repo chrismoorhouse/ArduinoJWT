@@ -38,9 +38,9 @@
 
 // The standard JWT header already base64 encoded.
 const char* jwtHeader[3] PROGMEM = {
-  "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9",   // {"alg": "HS256", "typ": "JWT"}
-  "eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9",   // {"alg": "RS256", "typ": "JWT"}
-  "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogIkpXVCJ9"    // {"alg": "ES256", "typ": "JWT"}
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",       // {"typ":"JWT","alg":"HS256"}
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",       // {"typ":"JWT","alg":"RS256"}
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9"        // {"typ":"JWT","alg":"ES256"}
 };
 
 // const uint8_t SHA256_SIG[] PROGMEM = {
@@ -163,10 +163,9 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
   uint8_t* signature;
   unsigned int signature_len;
 
-  // Hash the message (payload) if needed
+  // Hash the message (jwt without jws) if needed
   uint8_t *hash;
   if (algo == RS256 || algo == ES256) {
-    // Hash the message (current jwt)
     // TODO: Should check if message is too long..
     Sha256.init();
     Sha256.print(jwt);
