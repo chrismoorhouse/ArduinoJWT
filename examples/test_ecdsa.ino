@@ -10,22 +10,24 @@
 
 typedef struct SHA256_HashContext{
     uECC_HashContext uECC;
-    SHA256_CTX ctx;
+    Sha256 ctx;
 } SHA256_HashContext;
 
 static void init_SHA256(const uECC_HashContext *base) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    sha256_init(&context->ctx);
+    context->ctx.init();
 }
 
 static void update_SHA256(const uECC_HashContext *base, const uint8_t* message, unsigned int message_size) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    sha256_update(&context->ctx, message, (int) message_size);
+    for(unsigned int i=0; i<message_size; i++){
+      context->ctx.write(message[i]);
+    }
 }
 
 static void finish_SHA256(const uECC_HashContext *base, uint8_t *hash) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    sha256_final(&context->ctx, hash);
+    hash = context->ctx.result();
 }
 
 void setup(){
@@ -34,11 +36,10 @@ void setup(){
 
     // Hash the message (jwt)
     String jwt = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
-    SHA256_CTX ctx;
-    uint8_t hash[HASH_SIZE];
-    sha256_init(&ctx);
-    sha256_update(&ctx, (uint8_t*) jwt, strlen(jwt));
-    sha256_final(&ctx, buf);
+    Sha256 sha256;
+    sha256.init();
+    sha256.print(jwt);
+    hash = sha256.result();
 
     int i, c;
     uint8_t sig[64] = {0};

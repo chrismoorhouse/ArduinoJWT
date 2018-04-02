@@ -30,17 +30,17 @@ const uint8_t sha256InitState[] PROGMEM = {
 };
 
 
-void Sha256Class::init(void) {
+void Sha256::init(void) {
   memcpy_P(state.b,sha256InitState,32);
   byteCount = 0;
   bufferOffset = 0;
 }
 
-uint32_t Sha256Class::ror32(uint32_t number, uint8_t bits) {
+uint32_t Sha256::ror32(uint32_t number, uint8_t bits) {
   return ((number << (32-bits)) | (number >> bits));
 }
 
-void Sha256Class::hashBlock() {
+void Sha256::hashBlock() {
   // Sha256 only for now
   uint8_t i;
   uint32_t a,b,c,d,e,f,g,h,t1,t2;
@@ -82,7 +82,7 @@ void Sha256Class::hashBlock() {
   state.w[7] += h;
 }
 
-void Sha256Class::addUncounted(uint8_t data) {
+void Sha256::addUncounted(uint8_t data) {
   buffer.b[bufferOffset ^ 3] = data;
   bufferOffset++;
   if (bufferOffset == BUFFER_SIZE) {
@@ -91,13 +91,13 @@ void Sha256Class::addUncounted(uint8_t data) {
   }
 }
 
-size_t Sha256Class::write(uint8_t data) {
+size_t Sha256::write(uint8_t data) {
   ++byteCount;
   addUncounted(data);
   return( 1 );
 }
 
-void Sha256Class::pad() {
+void Sha256::pad() {
   // Implement SHA-256 padding (fips180-2 §5.1.1)
 
   // Pad with 0x80 followed by 0x00 until the end of the block
@@ -116,7 +116,7 @@ void Sha256Class::pad() {
 }
 
 
-uint8_t* Sha256Class::result(void) {
+uint8_t* Sha256::result(void) {
   // Pad to complete the last block
   pad();
 
@@ -139,39 +139,37 @@ uint8_t* Sha256Class::result(void) {
 #define HMAC_IPAD 0x36
 #define HMAC_OPAD 0x5c
 
-uint8_t keyBuffer[BLOCK_LENGTH]; // K0 in FIPS-198a
-uint8_t innerHash[HASH_LENGTH];
 
-void Sha256Class::initHmac(const uint8_t* key, int keyLength) {
+void HMAC::init(const uint8_t* key, int keyLength) {
   uint8_t i;
   memset(keyBuffer,0,BLOCK_LENGTH);
   if (keyLength > BLOCK_LENGTH) {
     // Hash long keys
-    init();
-    for (;keyLength--;) write(*key++);
-    memcpy(keyBuffer,result(),HASH_LENGTH);
+    Sha256::init();
+    for (;keyLength--;) Sha256::write(*key++);
+    memcpy(keyBuffer, Sha256::result(),HASH_LENGTH);
   } else {
     // Block length keys are used as is
     memcpy(keyBuffer,key,keyLength);
   }
   //for (i=0; i<BLOCK_LENGTH; i++) debugHH(keyBuffer[i]);
   // Start inner hash
-  init();
+  Sha256::init();
   for (i=0; i<BLOCK_LENGTH; i++) {
-    write(keyBuffer[i] ^ HMAC_IPAD);
+    Sha256::write(keyBuffer[i] ^ HMAC_IPAD);
   }
 }
 
-uint8_t* Sha256Class::resultHmac(void) {
+uint8_t* HMAC::result(void) {
   uint8_t i;
     // Complete inner hash
-  memcpy(innerHash,result(),HASH_LENGTH);
+  memcpy(innerHash, Sha256::result(), HASH_LENGTH);
   // now innerHash[] contains H((K0 xor ipad)||text)
 
   // Calculate outer hash
-  init();
-  for (i=0; i<BLOCK_LENGTH; i++) write(keyBuffer[i] ^ HMAC_OPAD);
-  for (i=0; i<HASH_LENGTH; i++) write(innerHash[i]);
-  return result();
+  Sha256::init();
+  for (i=0; i<BLOCK_LENGTH; i++) Sha256::write(keyBuffer[i] ^ HMAC_OPAD);
+  for (i=0; i<HASH_LENGTH; i++) Sha256::write(innerHash[i]);
+  return Sha256::result();
 }
-Sha256Class Sha256;
+Sha256 Sha256;

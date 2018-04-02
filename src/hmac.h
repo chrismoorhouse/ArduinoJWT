@@ -24,13 +24,11 @@ union _state {
   uint32_t w[HASH_LENGTH/4];
 };
 
-class Sha256Class : public Print
+class Sha256 : public Print
 {
   public:
     void init(void);
-    void initHmac(const uint8_t* secret, int secretLength);
     uint8_t* result(void);
-    uint8_t* resultHmac(void);
     virtual size_t write(uint8_t);
     using Print::write;
   private:
@@ -42,9 +40,19 @@ class Sha256Class : public Print
     uint8_t bufferOffset;
     _state state;
     uint32_t byteCount;
-    uint8_t keyBuffer[BLOCK_LENGTH];
-    uint8_t innerHash[HASH_LENGTH];
+
 };
-extern Sha256Class Sha256;
+
+class HMAC : public Sha256
+{
+  public:
+    void init(const uint8_t* secret, int secretLength);
+    uint8_t* result(void);
+
+  private:
+    uint8_t keyBuffer[BLOCK_LENGTH];        // K0 in FIPS-198a
+    uint8_t innerHash[HASH_LENGTH];
+
+};
 
 #endif

@@ -32,7 +32,6 @@
 #include "uECC.h"
 #include "base64.h"
 #include "hmac.h"
-#include "sha256.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -71,21 +70,24 @@ const char* jwtHeader[3] PROGMEM = {
 
 typedef struct SHA256_HashContext{
     uECC_HashContext uECC;
-    SHA256_CTX ctx;
+    Sha256 ctx;
 } SHA256_HashContext;
 
 static void init_SHA256(const uECC_HashContext *base) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
+    context->ctx.init();
 }
 
 static void update_SHA256(const uECC_HashContext *base, const uint8_t* message, unsigned int message_size) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    sha256_update(&context->ctx, message, (int) message_size);
+    for(unsigned int i=0; i<message_size; i++){
+      context->ctx.write(message[i]);
+    }
 }
 
 static void finish_SHA256(const uECC_HashContext *base, uint8_t *hash) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    sha256_final(&context->ctx, hash);
+    hash = context->ctx.result();
 }
 
 // ArduinoJWT Methods
@@ -173,18 +175,15 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
   // Build the signature
   uint8_t* signature;
   unsigned int signature_len;
+  uint8_t* hash;
 
   // Hash the message (jwt without jws) if needed
-  uint8_t* hash;
   if (algo == RS256 || algo == ES256) {
     // TODO: Should check if message is too long..
-  	SHA256_CTX ctx;
-    uint8_t buf[HASH_LENGTH];
-
-    sha256_init(&ctx);
-  	sha256_update(&ctx, (uint8_t*) jwt, strlen(jwt));
-  	sha256_final(&ctx, buf);
-    hash = buf;
+    Sha256 sha256;
+    sha256.init();
+  	sha256.print(jwt);
+  	hash = sha256.result();
 
     // // Debugging
     // Serial.println("JWT:");
@@ -193,13 +192,14 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
     // printxstr(hash, HASH_LENGTH);
   }
 
+  HMAC hmac;
   switch(algo) {
     case HS256:
       signature_len = HASH_LENGTH;
       // Perform HMAC
-      Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
-      Sha256.print(jwt);
-      signature = Sha256.resultHmac();
+      hmac.init((const uint8_t*)_psk.c_str(), _psk.length());
+      hmac.print(jwt);
+      signature = hmac.result();
       break;
 
     case RS256:
@@ -310,14 +310,15 @@ bool ArduinoJWT::decodeJWT(char* jwt, char* payload, int payloadLength) {
   }
 
   // Build the signature
-  Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
-  Sha256.print(encodedHeader);
-  Sha256.print(".");
-  Sha256.print(encodedPayload);
+  HMAC hmac;
+  hmac.init((const uint8_t*)_psk.c_str(), _psk.length());
+  hmac.print(encodedHeader);
+  hmac.print(".");
+  hmac.print(encodedPayload);
 
   // Encode the signature as base64
   uint8_t base64Signature[encode_base64_length(32)];
-  encode_base64(Sha256.resultHmac(), 32, base64Signature);
+  encode_base64(hmac.result(), 32, base64Signature);
   uint8_t* ptr = &base64Signature[0] + encode_base64_length(32);
   // Get rid of any padding and replace / and +
   while(*(ptr - 1) == '=') {
