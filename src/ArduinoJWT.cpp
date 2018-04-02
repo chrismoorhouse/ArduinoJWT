@@ -31,7 +31,7 @@
 #include "ArduinoJWT.h"
 #include "uECC.h"
 #include "base64.h"
-#include "hmac.h"
+#include "sha256.h"
 
 #include <stdio.h>
 #include <string.h>

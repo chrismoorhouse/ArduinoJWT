@@ -4,7 +4,7 @@
  */
 
 #include <string.h>
-#include "hmac.h"
+#include "sha256.h"
 
 
 const uint32_t sha256K[] PROGMEM = {
