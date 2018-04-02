@@ -35,23 +35,23 @@ void setup(){
     Serial.begin(115200);
     Serial.println();
 
-//     // Hash the message (payload) if needed
-//     uint8_t *hash;
-//     Sha256.init();
-//     Sha256.print(jwt);
-//     hash = Sha256.result();
+    // Hash the message (payload) if needed
+    String jwt = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
+    uint8_t *hash;
+    Sha256.init();
+    Sha256.print(jwt);
+    hash = Sha256.result();
 
     int i, c;
-    uint8_t hash[32] = {0};
     uint8_t sig[64] = {0};
 
-    uint8_t tmp[2 * SHA256_DIGEST_LENGTH + SHA256_BLOCK_LENGTH];
+    uint8_t tmp[2 * HASH_LENGTH + BLOCK_LENGTH];
     SHA256_HashContext ctx = {{
         &init_SHA256,
         &update_SHA256,
         &finish_SHA256,
-        SHA256_BLOCK_LENGTH,
-        SHA256_DIGEST_LENGTH,
+        BLOCK_LENGTH,
+        HASH_LENGTH,
         tmp
     }};
 
@@ -63,7 +63,7 @@ void setup(){
     // if (!uECC_make_key(ec_public, ec_private, curves[c])) {
     //     Serial.println("uECC_make_key() failed\n");
     // }
-    memcpy(hash, ec_public, HASH_LENGTH);
+    // memcpy(hash, ec_public, HASH_LENGTH);
 
     if (!uECC_sign_deterministic(ec_private, hash, HASH_LENGTH, &ctx.uECC, sig, curve)) {
         Serial.println("uECC_sign() failed");

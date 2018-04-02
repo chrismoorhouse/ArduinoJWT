@@ -32,15 +32,16 @@
 #include "uECC.h"
 #include "base64.h"
 #include "sha256.h"
+#include "sha256_2.h"
 
 #include <stdio.h>
 #include <string.h>
 
 // The standard JWT header already base64 encoded.
 const char* jwtHeader[3] PROGMEM = {
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",       // {"typ":"JWT","alg":"HS256"}
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",       // {"typ":"JWT","alg":"RS256"}
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9"        // {"typ":"JWT","alg":"ES256"}
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",       // {"alg":"HS256","typ":"JWT"}
+  "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",       // {"alg":"RS256","typ":"JWT"}
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"        // {"alg":"ES256","typ":"JWT"}
 };
 
 // const uint8_t SHA256_SIG[] PROGMEM = {
@@ -48,33 +49,41 @@ const char* jwtHeader[3] PROGMEM = {
 //   0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20
 // };
 
-// typedef struct SHA256_CTX {
-// 	uint32_t	state[8];
-// 	uint64_t	bitcount;
-// 	uint8_t	buffer[BLOCK_LENGTH];
-// } SHA256_CTX;
+// // Debugging
+// void printxstr(uint8_t* hex_str, unsigned int hex_str_len){
+// 	for (int i=0; i<hex_str_len; i++) {
+//     // Alignment
+//     if (i!=0){
+//       if (i%16 == 0){
+//         Serial.println("");
+//       }else{
+//         Serial.print(" ");
+//       }
+//     }
+//
+//     Serial.print((hex_str[i] >> 4) & 0xF, HEX);
+//     Serial.print(hex_str[i] & 0xF, HEX);
+// 	}
+//   Serial.println("");
+// }
 
 typedef struct SHA256_HashContext{
     uECC_HashContext uECC;
-    // SHA256_CTX ctx;
+    SHA256_CTX ctx;
 } SHA256_HashContext;
 
 static void init_SHA256(const uECC_HashContext *base) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    // SHA256_Init(&context->ctx);
-    Sha256.init();
 }
 
 static void update_SHA256(const uECC_HashContext *base, const uint8_t* message, unsigned int message_size) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    // SHA256_Update(&context->ctx, message, (int) message_size);
-    Sha256.print((char*) message);
+    sha256_update(&context->ctx, message, (int) message_size);
 }
 
 static void finish_SHA256(const uECC_HashContext *base, uint8_t *hash) {
     SHA256_HashContext *context = (SHA256_HashContext *)base;
-    // SHA256_Final(hash, &context->ctx);
-    hash = Sha256.result();
+    sha256_final(&context->ctx, hash);
 }
 
 // ArduinoJWT Methods
@@ -164,12 +173,22 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
   unsigned int signature_len;
 
   // Hash the message (jwt without jws) if needed
-  uint8_t *hash;
+  uint8_t* hash;
   if (algo == RS256 || algo == ES256) {
     // TODO: Should check if message is too long..
-    Sha256.init();
-    Sha256.print(jwt);
-    hash = Sha256.result();
+  	SHA256_CTX ctx;
+    uint8_t buf[HASH_LENGTH];
+
+    sha256_init(&ctx);
+  	sha256_update(&ctx, (uint8_t*) jwt, strlen(jwt));
+  	sha256_final(&ctx, buf);
+    hash = buf;
+
+    // // Debugging
+    // Serial.println("JWT:");
+    // Serial.println(jwt);
+    // Serial.println("Hash: ");
+    // printxstr(hash, HASH_LENGTH);
   }
 
   switch(algo) {
@@ -234,6 +253,11 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
       // Output
       signature = sig;
       signature_len = 64;
+
+      // // Debugging
+      // Serial.println("Signature: ");
+      // printxstr(signature, signature_len);
+
       break;
   }
 
