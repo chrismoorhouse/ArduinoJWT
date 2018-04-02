@@ -1,50 +1,35 @@
-/**
- * Based on original work by Cathedrow
- * Original library located at https://github.com/Cathedrow/Cryptosuite
- */
+/*********************************************************************
+* Filename:   sha256.h
+* Author:     Brad Conte (brad AT bradconte.com)
+* Copyright:
+* Disclaimer: This code is presented "as is" without any guarantees.
+* Details:    Defines the API for the corresponding SHA1 implementation.
+*********************************************************************/
 
-#ifndef Sha256_h
-#define Sha256_h
+#ifndef SHA256_H
+#define SHA256_H
 
-#include <inttypes.h>
-#include "Print.h"
+/*************************** HEADER FILES ***************************/
+#include "Arduino.h"
+#include <stddef.h>
 
-#define HASH_LENGTH 32
-#define BLOCK_LENGTH 64
+/****************************** MACROS ******************************/
+#define SHA256_BLOCK_SIZE 32            // SHA256 outputs a 32 byte digest
 
-#define BUFFER_SIZE 64
+/**************************** DATA TYPES ****************************/
+typedef unsigned char BYTE;             // 8-bit byte
+typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
 
+typedef struct {
+	BYTE data[64];
+	WORD datalen;
+	unsigned long long bitlen;
+	WORD state[8];
+} SHA256_CTX;
 
-union _buffer {
-  uint8_t b[BLOCK_LENGTH];
-  uint32_t w[BLOCK_LENGTH/4];
-};
-union _state {
-  uint8_t b[HASH_LENGTH];
-  uint32_t w[HASH_LENGTH/4];
-};
+/*********************** FUNCTION DECLARATIONS **********************/
+void sha256_init(SHA256_CTX *ctx);
+void sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
+void sha256_final(SHA256_CTX *ctx, BYTE hash[]);
 
-class Sha256Class : public Print
-{
-  public:
-    void init(void);
-    void initHmac(const uint8_t* secret, int secretLength);
-    uint8_t* result(void);
-    uint8_t* resultHmac(void);
-    virtual size_t write(uint8_t);
-    using Print::write;
-  private:
-    void pad();
-    void addUncounted(uint8_t data);
-    void hashBlock();
-    uint32_t ror32(uint32_t number, uint8_t bits);
-    _buffer buffer;
-    uint8_t bufferOffset;
-    _state state;
-    uint32_t byteCount;
-    uint8_t keyBuffer[BLOCK_LENGTH];
-    uint8_t innerHash[HASH_LENGTH];
-};
-extern Sha256Class Sha256;
-
-#endif
+#endif   // SHA256_H

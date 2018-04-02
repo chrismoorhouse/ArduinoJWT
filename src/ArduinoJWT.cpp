@@ -31,11 +31,13 @@
 #include "ArduinoJWT.h"
 #include "uECC.h"
 #include "base64.h"
+#include "hmac.h"
 #include "sha256.h"
-#include "sha256_2.h"
 
 #include <stdio.h>
 #include <string.h>
+
+#define ES256_SIG_LENGTH  64
 
 // The standard JWT header already base64 encoded.
 const char* jwtHeader[3] PROGMEM = {
@@ -193,7 +195,7 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
 
   switch(algo) {
     case HS256:
-      signature_len = 32;
+      signature_len = HASH_LENGTH;
       // Perform HMAC
       Sha256.initHmac((const uint8_t*)_psk.c_str(), _psk.length());
       Sha256.print(jwt);
@@ -228,7 +230,8 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
     case ES256:
       // ECC
       // https://github.com/kmackay/micro-ecc/blob/master/uECC.h
-      uint8_t sig[64] = {0};
+      signature_len = ES256_SIG_LENGTH;
+      uint8_t sig[ES256_SIG_LENGTH];
 
       // Sign deterministic
       uint8_t tmp[2 * HASH_LENGTH + BLOCK_LENGTH];
@@ -252,7 +255,6 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
 
       // Output
       signature = sig;
-      signature_len = 64;
 
       // // Debugging
       // Serial.println("Signature: ");
