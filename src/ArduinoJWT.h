@@ -51,26 +51,34 @@ typedef enum Algo{
 
 class ArduinoJWT {
 private:
-  String _psk;          // for HS256 (Pre-shared Key)
-  // RSA_CTX _rsa_ctx;     // for RS256 (RSA Private Key)
-  uint8_t* _pk;         // for ES256 (Private Key)
+  // for HS256 (Pre-shared Key)
+  String psk;
+
+  // RS256 (RSA Keys)
+  // RSA_CTX rsa_ctx;
+
+  // ES256 (Private Key, Public Key)
+  uint8_t* ec_private;
+  uint8_t* ec_public;
 
 public:
   // Set keys for encoding and decoding JWTs
-  void setPSK(String psk);
-  void setPSK(char* psk);
-  // void setRSAPK(String buf);
-  // void setRSAPK(uint8_t *buf, int len);
-  void setPK(String pk);
-  void setPK(uint8_t* pk);
+  void setHS256key(String psk);
+  void setHS256key(char* psk);
+
+  // void setRS256keys(String buf);
+  // void setRS256keys(uint8_t *buf, int len);
 
   // // Dump keys if they are not needed
   // void freeRSAPK();
 
-  // More than welcome to use this function if setRSAPK does not work out
+  // More than welcome to use this function if setRS256keys does not work out
   // RSA_priv_key_new(rsa_ctx,
   //        modulus, mod_len, pub_exp, pub_len, priv_exp, priv_len,
   //        p, p_len, q, p_len, dP, dP_len, dQ, dQ_len, qInv, qInv_len);
+
+  void setES256keys(String ec_private, String ec_public);
+  void setES256keys(uint8_t* ec_private, uint8_t* ec_public);
 
   // Get the calculated length of a JWT
   int getJWTLength(String payload, Algo algo);
@@ -82,8 +90,8 @@ public:
   String encodeJWT(String payload, Algo algo);
   void encodeJWT(char* payload, char* jwt, Algo algo);
   // Decode a JWT and retreive the payload
-  String decodeJWT(String jwt);
-  bool decodeJWT(char* jwt, char* payload, int payloadLength);
+  String decodeJWT(String jwt, Algo algo);
+  bool decodeJWT(char* jwt, char* payload, int payloadLength, Algo algo);
 };
 
 #endif

@@ -3,7 +3,7 @@ Top Level Example / Unit Test
 */
 
 #include "ArduinoJWT.h"
-#include "keys.h"
+#include "ec_keys.h"
 
 #define HEADER_NUM 3
 
@@ -19,10 +19,11 @@ String header[HEADER_NUM] = {
   "{\"alg\":\"ES256\",\"typ\":\"JWT\"}"
 };
 
+// Change intermediate results according to your keys
 String output[HEADER_NUM] = {
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.WI0fJ1ubHHCltv6KjDpFq3hnqK4brOjAAezOWqtX5ME",
   "",
-  ""
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.b_A7lJJBzh2t1DUZ5pYOCoW0GmmgXDKBA6orzhWUyhbY1aeoW8BSSbXnKoSG4WQRXlgcKfp36nSYjZiywTFrcg"
 };
 
 ArduinoJWT JWT;
@@ -32,7 +33,7 @@ void setup(){
   Serial.begin(115200);
   Serial.println();
 
-  for (int i=0; i<HEADER_NUM; i++){
+  for (int i=0; i<HEADER_NUM; i++) {
     String encode, decode, success;
 
     if (i == RS256){
@@ -42,18 +43,18 @@ void setup(){
     }
 
     // Set keys
-    switch(i){
+    switch(i) {
         case HS256:
-          JWT.setPSK(keys[i]);
+          JWT.setHS256key(keys[i]);
           break;
 
-        case RS256:
-          // JWT.setRSAPK(keys[i]);
-          break;
+        // case RS256:
+        //   JWT.setRS256keys(keys[i]);
+        //   break;
 
         case ES256:
-          // JWT.setPK(keys[i]);
-          JWT.setPK(ec_private);
+          // JWT.setES256keys(keys[i]);
+          JWT.setES256keys(ec_private, ec_public);
           break;
     }
 
@@ -70,7 +71,7 @@ void setup(){
     Serial.println();
 
     // Decode
-    decode = JWT.decodeJWT(encode);
+    decode = JWT.decodeJWT(encode, Algo(i));
     success = (header[i] == decode ? "True" : "False");
 
     // Print results
