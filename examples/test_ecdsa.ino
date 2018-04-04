@@ -44,13 +44,13 @@ void setup(){
     int i, c;
     uint8_t sig[64] = {0};
 
-    uint8_t tmp[2 * HASH_SIZE + BLOCK_SIZE];
+    uint8_t tmp[2 * HASH_LENGTH + BLOCK_LENGTH];
     SHA256_HashContext ctx = {{
         &init_SHA256,
         &update_SHA256,
         &finish_SHA256,
-        BLOCK_SIZE,
-        HASH_SIZE,
+        BLOCK_LENGTH,
+        HASH_LENGTH,
         tmp
     }};
 
@@ -62,15 +62,15 @@ void setup(){
     // if (!uECC_make_key(ec_public, ec_private, curves[c])) {
     //     Serial.println("uECC_make_key() failed\n");
     // }
-    // memcpy(hash, ec_public, HASH_SIZE);
+    // memcpy(hash, ec_public, HASH_LENGTH);
 
-    if (!uECC_sign_deterministic(ec_private, hash, HASH_SIZE, &ctx.uECC, sig, curve)) {
+    if (!uECC_sign_deterministic(ec_private, hash, HASH_LENGTH, &ctx.uECC, sig, curve)) {
         Serial.println("uECC_sign() failed");
     }else{
         Serial.println("uECC_sign() success!");
     }
 
-    if (!uECC_verify(ec_public, hash, HASH_SIZE, sig, curve)) {
+    if (!uECC_verify(ec_public, hash, HASH_LENGTH, sig, curve)) {
         Serial.println("uECC_verify() failed");
     }else{
         Serial.println("uECC_verify() success!");
