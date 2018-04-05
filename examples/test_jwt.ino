@@ -3,15 +3,12 @@ Top Level Example / Unit Test
 */
 
 #include "ArduinoJWT.h"
-#include "ec_keys.h"
+#include "../keys/rsa_keys.h"
+#include "../keys/ec_keys.h"
 
 #define HEADER_NUM 3
 
-String keys[HEADER_NUM] = {
-  "secret",
-  "",
-  ""
-};
+String hmac_key = "secret";
 
 String header[HEADER_NUM] = {
   "{\"alg\":\"HS256\",\"typ\":\"JWT\"}",
@@ -45,15 +42,16 @@ void setup(){
     // Set keys
     switch(i) {
         case HS256:
-          JWT.setHS256key(keys[i]);
+          JWT.setHS256key(hmac_key);
           break;
 
         // case RS256:
-        //   JWT.setRS256keys(keys[i]);
+        //   // TODO: Figure out how to compose RSA context.
+        //   // Might be easier feeding pem or der file...
+        //   JWT.setRS256keys(keys);
         //   break;
 
         case ES256:
-          // JWT.setES256keys(keys[i]);
           JWT.setES256keys(ec_private, ec_public);
           break;
     }

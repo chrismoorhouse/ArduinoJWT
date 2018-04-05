@@ -2,7 +2,7 @@
 
 #include "uECC.h"
 #include "sha256.h"
-#include "keys.h"
+#include "../keys/ec_keys.h"
 
 #include <stdio.h>
 #include <string.h>
