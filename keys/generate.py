@@ -45,7 +45,7 @@ def to_hex_ascii(value):
     # Merge with comas
     output += ', '.join(value_list)
 
-    output += '\n'
+    output += ',\n'
 
     return output, len(value_list)
 
