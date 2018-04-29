@@ -39,8 +39,8 @@ def to_hex_ascii(value):
     # Add '0x' prefix
     value_list = ['0x' + v for v in value_list]
 
-    # Add newline to every 16th byte
-    value_list = ['\n' + v if i != 0 and i % 16 == 0 else v for i, v in enumerate(value_list)]
+    # Add newline to every 8th byte
+    value_list = ['\n' + v if i != 0 and i % 8 == 0 else v for i, v in enumerate(value_list)]
 
     # Merge with comas
     output += ', '.join(value_list)

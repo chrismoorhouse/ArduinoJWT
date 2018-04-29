@@ -32,6 +32,7 @@ void setup(){
 
   for (int i=0; i<HEADER_NUM; i++) {
     String encode, decode, success;
+    unsigned long start, end;
 
     if (i == RS256){
       // RS256 is not supported yet!
@@ -57,11 +58,14 @@ void setup(){
     }
 
     // Encode
+    start = millis();
     encode = JWT.encodeJWT(header[i], Algo(i));
+    end = millis();
     success = (output[i] == encode ? "True" : "False");
 
     // Print results
     Serial.println("Encode Test # " + String(i + 1));
+    Serial.println("Time: " + String(end - start) + " ms");
     Serial.println("Input: " + header[i]);
     Serial.println("Expected Output: " + output[i] + ", length: " + output[i].length());
     Serial.println("Received Output: " + encode + ", length: " + encode.length());
@@ -69,11 +73,14 @@ void setup(){
     Serial.println();
 
     // Decode
+    start = millis();
     decode = JWT.decodeJWT(encode, Algo(i));
+    end = millis();
     success = (header[i] == decode ? "True" : "False");
 
     // Print results
     Serial.println("Decode Test # " + String(i + 1));
+    Serial.println("Time: " + String(end - start) + " ms");
     Serial.println("Input: " + encode);
     Serial.println("Expected Output: " + header[i] + ", length: " + header[i].length());
     Serial.println("Received Output: " + decode + ", length: " + decode.length());
