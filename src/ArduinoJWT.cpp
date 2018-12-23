@@ -174,7 +174,7 @@ void ArduinoJWT::encodeJWT(char* payload, char* jwt, Algo algo)
   *(ptr) = 0;
 
   // Build the signature
-  uint8_t* signature;
+  uint8_t* signature = NULL;
   unsigned int signature_len;
 
   if (algo == HS256){
