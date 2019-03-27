@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Very quick and dirty way to generate RSA and EC keys as well as header files for the ArduinoJWT.
 You can look at keys in the terminal and double check that headers has been
@@ -77,10 +78,11 @@ def to_c_header(name, value):
 
 if __name__ == '__main__':
     ### RSA ###
-    # Generate RSA private key, public key and certificate
-    os.system('openssl genrsa -out rsa_private.pem 2048')
-    os.system('openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem')
-    os.system('openssl req -x509 -new -key rsa_private.pem -days 1000000 -out rsa_cert.pem -subj "/CN=unused"')
+    if not os.path.isfile('rsa_private.pem'):
+        # Generate RSA private key, public key and certificate
+        os.system('openssl genrsa -out rsa_private.pem 2048')
+        os.system('openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem')
+        os.system('openssl req -x509 -new -key rsa_private.pem -days 1000000 -out rsa_cert.pem -subj "/CN=unused"')
 
     # Read private key from pem file
     with open('rsa_private.pem', 'r') as f:
@@ -122,10 +124,11 @@ if __name__ == '__main__':
     file.close()
 
     ### EC ###
-    # Generate EC private key, public key and certificate
-    os.system('openssl ecparam -genkey -name prime256v1 -noout -out ec_private.pem')
-    os.system('openssl ec -in ec_private.pem -pubout -out ec_public.pem')
-    os.system('openssl req -x509 -new -key ec_private.pem -days 1000000 -out ec_cert.pem -subj "/CN=unused"')
+    if not os.path.isfile('ec_private.pem'):
+        # Generate EC private key, public key and certificate
+        os.system('openssl ecparam -genkey -name prime256v1 -noout -out ec_private.pem')
+        os.system('openssl ec -in ec_private.pem -pubout -out ec_public.pem')
+        os.system('openssl req -x509 -new -key ec_private.pem -days 1000000 -out ec_cert.pem -subj "/CN=unused"')
 
     # Read private key from pem file
     with open('ec_private.pem', 'r') as f:
