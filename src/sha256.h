@@ -12,36 +12,47 @@
 #define HASH_LENGTH 32
 #define BLOCK_LENGTH 64
 
+#define BUFFER_SIZE 64
+
+
 union _buffer {
-  unsigned char b[BLOCK_LENGTH];
+  uint8_t b[BLOCK_LENGTH];
   uint32_t w[BLOCK_LENGTH/4];
 };
 union _state {
-  unsigned char b[HASH_LENGTH];
+  uint8_t b[HASH_LENGTH];
   uint32_t w[HASH_LENGTH/4];
 };
 
-class Sha256Class : public Print
+class Sha256 : public Print
 {
   public:
     void init(void);
-    void initHmac(const unsigned char* secret, int secretLength);
-    unsigned char* result(void);
-    unsigned char* resultHmac(void);
-    virtual size_t write(unsigned char);
+    uint8_t* result(void);
+    virtual size_t write(uint8_t);
     using Print::write;
   private:
     void pad();
-    void addUncounted(unsigned char data);
+    void addUncounted(uint8_t data);
     void hashBlock();
-    uint32_t ror32(uint32_t number, unsigned char bits);
+    uint32_t ror32(uint32_t number, uint8_t bits);
     _buffer buffer;
-    unsigned char bufferOffset;
+    uint8_t bufferOffset;
     _state state;
     uint32_t byteCount;
-    unsigned char keyBuffer[BLOCK_LENGTH];
-    unsigned char innerHash[HASH_LENGTH];
+
 };
-extern Sha256Class Sha256;
+
+class HMAC : public Sha256
+{
+  public:
+    void init(const uint8_t* secret, int secretLength);
+    uint8_t* result(void);
+
+  private:
+    uint8_t keyBuffer[BLOCK_LENGTH];        // K0 in FIPS-198a
+    uint8_t innerHash[HASH_LENGTH];
+
+};
 
 #endif

@@ -2,3 +2,7 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
+*.gch
+*.pem
+*_keys.h
+test.ino

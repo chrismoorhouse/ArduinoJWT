@@ -31,34 +31,67 @@
 #ifndef ARDUINO_JWT_H
 #define ARDUINO_JWT_H
 
-#include <Arduino.h>
+#include "Arduino.h"
+
+// // Some crazy hacks to compile this shit
+// #define CONFIG_SSL_CERT_VERIFICATION
+//
+// #include "../lib/axtls-8266/crypto/bigint_impl.h"
+// #include "../lib/axtls-8266/crypto/bigint.h"
+// #include "../lib/axtls-8266/crypto/os_int.h"
+// #include "../lib/axtls-8266/crypto/crypto.h"
 
 
+// ArduinoJWT Related
+typedef enum Algo{
+  HS256=0,
+  RS256=1,
+  ES256=2
+}Algo;
 
 class ArduinoJWT {
 private:
-  String _psk;
+  // for HS256 (Pre-shared Key)
+  String psk;
+
+  // RS256 (RSA Keys)
+  // RSA_CTX rsa_ctx;
+
+  // ES256 (Private Key, Public Key)
+  uint8_t* ec_private;
+  uint8_t* ec_public;
 
 public:
-  ArduinoJWT(String psk);
-  ArduinoJWT(char* psk);
+  // Set keys for encoding and decoding JWTs
+  void setHS256key(String psk);
+  void setHS256key(char* psk);
 
-  // Set a new psk for encoding and decoding JWTs
-  void setPSK(String psk);
-  void setPSK(char* psk);
+  // void setRS256keys(String buf);
+  // void setRS256keys(uint8_t *buf, int len);
+
+  // // Dump keys if they are not needed
+  // void freeRSAPK();
+
+  // More than welcome to use this function if setRS256keys does not work out
+  // RSA_priv_key_new(rsa_ctx,
+  //        modulus, mod_len, pub_exp, pub_len, priv_exp, priv_len,
+  //        p, p_len, q, p_len, dP, dP_len, dQ, dQ_len, qInv, qInv_len);
+
+  void setES256keys(String ec_private, String ec_public);
+  void setES256keys(uint8_t* ec_private, uint8_t* ec_public);
 
   // Get the calculated length of a JWT
-  int getJWTLength(String& payload);
-  int getJWTLength(char* payload);
+  int getJWTLength(String payload, Algo algo);
+  int getJWTLength(char* payload, Algo algo);
   // Get the length of the decoded payload from a JWT
-  int getJWTPayloadLength(String& jwt);
+  int getJWTPayloadLength(String jwt);
   int getJWTPayloadLength(char* jwt);
   // Create a JSON Web Token
-  String encodeJWT(String& payload);
-  void encodeJWT(char* payload, char* jwt);
+  String encodeJWT(String payload, Algo algo);
+  void encodeJWT(char* payload, char* jwt, Algo algo);
   // Decode a JWT and retreive the payload
-  bool decodeJWT(String& jwt, String& payload);
-  bool decodeJWT(char* jwt, char* payload, int payloadLength);
+  String decodeJWT(String jwt, Algo algo);
+  bool decodeJWT(char* jwt, char* payload, int payloadLength, Algo algo);
 };
 
 #endif

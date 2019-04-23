@@ -1,10 +1,10 @@
 {
     "name": "ArduinoJWT",
     "keywords": "jwt, iot",
-    "description": "Library for encoding and decoding JSON web tokens for the Arduino and ESP8266 platforms. This library does not currently support adding any options to the JWT and uses a fixed header for HS256.",
+    "description": "Updated ArduinoJWT library. Added ECDSA support and notes for the future RSA support.",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yutter/ArduinoJWT.git"
+        "url": "https://github.com/Barmaley13/ArduinoJWT.git"
     },
     "authors":
     [
@@ -13,9 +13,15 @@
         "email": "cm@interior-automation.co.uk",
         "url": "http://www.interior-automation.co.uk",
         "maintainer": true
+      },
+      {
+        "name": "Kirill Belyayev",
+        "email": "kirill@kbelyayev.com",
+        "url": "http://www.kbelyayev.com",
+        "maintainer": true
       }
     ],
-    "version": "1.0.1",
+    "version": "02.01.01",
     "frameworks": "arduino",
     "platforms": [
         "atmelavr",

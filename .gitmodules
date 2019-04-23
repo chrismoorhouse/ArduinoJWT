@@ -1,0 +1,9 @@
+[submodule "lib/Cryptosuite"]
+	path = lib/Cryptosuite
+	url = git://github.com/bakercp/Cryptosuite.git
+[submodule "lib/micro-ecc"]
+	path = lib/micro-ecc
+	url = git://github.com/kmackay/micro-ecc.git
+[submodule "lib/axtls-8266"]
+	path = lib/axtls-8266
+	url = https://github.com/igrr/axtls-8266
