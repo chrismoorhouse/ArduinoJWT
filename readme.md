@@ -5,13 +5,18 @@ Library for encoding and decoding JSON web tokens for the Arduino and ESP8266 pl
 ## Limitations
 
  - It is not currently possible to add options such as expiry time, user etc to the JWT
- - The header is fixed to be {"alg": "HS256", "typ": "JWT"}
+ - The header is fixed to be `{"alg": "HS256", "typ": "JWT"}`
 
 ## Compatible Hardware
 
  - Arduino
  - Intel Galileo/Edison
  - ESP8266
+
+
+## Example
+
+Please refer to the example script: [example/ArduinoJWT.ino](example/ArduinoJWT.ino)
 
 ## License
 
